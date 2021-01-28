@@ -1,9 +1,11 @@
+import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react'
 import TodosContext from "../context";
+import { v4 as uuidv4, v4 } from 'uuid';
 
 export default function TodoForm() {
     const [todo, setTodo] = useState("");
-    const { state: {currentTodo = {}}, dispatch } = useContext(TodosContext); // default empty object incase value not set
+    const { state: {todos, currentTodo = {}}, dispatch } = useContext(TodosContext); // default empty object incase value not set
 
     useEffect(() => {
         if (currentTodo.text) {
@@ -15,13 +17,25 @@ export default function TodoForm() {
         }
     }, [currentTodo.id])
 
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
         event.preventDefault();
 
         if (currentTodo.text) {
-            dispatch({ type: "UPDATE_TODO", payload: todo });
+            if (isValid(todos, todo)) {
+                const response = await axios.patch(`https://react-hooks-api-topaz.vercel.app/todos/${currentTodo.id}`, {
+                    text: todo
+                });
+                dispatch({ type: "UPDATE_TODO", payload: response.data });
+            }
         } else {
-            dispatch({ type: "ADD_TODO", payload: todo });
+            if (isValid(todos, todo)) {
+                const response = await axios.post(`https://react-hooks-api-topaz.vercel.app/todos`, {
+                    id: uuidv4(),
+                    text: todo,
+                    complete: false
+                });
+                dispatch({ type: "ADD_TODO", payload: response.data });
+            }
         }
         setTodo("");
     }
@@ -35,4 +49,19 @@ export default function TodoForm() {
             />
         </form>
     )
+}
+
+function isValid(todos, todo) {
+    let isValid = true;
+
+    if (todo === "") { // validate against empty todo
+        isValid = false;
+    }
+
+    if (todos.findIndex(t => t.text === todo) > -1) // validate against adding duplicates
+    {
+        isValid = false;
+    }
+
+    return isValid;
 }

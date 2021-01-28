@@ -1,23 +1,22 @@
-import { v4 as uuidv4 } from 'uuid';
-
 export default function reducer(state, action) {
     switch (action.type) {
+        case "GET_TODOS":
+            return {
+                ...state,
+                todos: action.payload
+            };
         case "SET_CURRENT_TODO":
             return {
                 ...state,
                 currentTodo: action.payload
             };
         case "TOGGLE_TODO":
-            const toggledTodos = state.todos.map(t => t.id === action.payload.id ? {...action.payload, complete: !action.payload.complete} : t);
-
+            const toggledTodos = state.todos.map(t => t.id === action.payload.id ? action.payload : t);
             return {
                 ...state, todos: toggledTodos
             };
         case "UPDATE_TODO":
-            if (isValid(state, action) === false)
-                return state;
-
-            const updatedTodo = {...state.currentTodo, text: action.payload };
+            const updatedTodo = { ...action.payload };
             const updatedTodoIndex = state.todos.findIndex(t => t.id === state.currentTodo.id);
             const updatedTodos = [
                 ...state.todos.slice(0, updatedTodoIndex), updatedTodo, ...state.todos.slice(updatedTodoIndex + 1)
@@ -34,35 +33,12 @@ export default function reducer(state, action) {
                 ...state, currentTodo: isRemovedTodo, todos: filteredTodos
             };
         case "ADD_TODO":
-            if (isValid(state, action) === false)
-                return state;
-
-            const newTodo = {
-                id: uuidv4(),
-                text: action.payload,
-                complete: false
-            };
-            const addedTodos = [...state.todos, newTodo];
+            const addedTodos = [...state.todos, action.payload];
 
             return {
                 ...state, todos: addedTodos
             };
         default:
             return state;
-    }
-
-    function isValid(state, action) {
-        let isValid = true;
-
-        if (!action.payload) { // validate against empty todo
-            isValid = false;
-        }
-
-        if (state.todos.findIndex(t => t.text === action.payload) > -1) // validate against adding duplicates
-        {
-            isValid = false;
-        }
-
-        return isValid;
     }
 }

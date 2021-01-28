@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useContext, useReducer } from 'react';
 import TodosContext from '../context';
 
@@ -12,8 +13,14 @@ export default function TodoList() {
                 {state.todos.map(todo => (
                     <li key={todo.id}>
                         <span
-                            onDoubleClick={() => dispatch({ type: "TOGGLE_TODO", payload: todo })}
-                            style={ todo.complete ? { textDecoration: "line-through" } : {}}>
+                            onDoubleClick={async () =>{
+                                const response = await axios.patch(`https://react-hooks-api-topaz.vercel.app/todos/${todo.id}`, {
+                                    complete: !todo.complete,
+                                });
+                                dispatch({ type: "TOGGLE_TODO", payload: response.data })
+                            }}
+                            style={ todo.complete ? { textDecoration: "line-through", cursor: "pointer" } : { cursor: "pointer" } }
+                            title="Double click...">
                             {todo.text}
                         </span>
                         <button
@@ -21,7 +28,10 @@ export default function TodoList() {
                             Edit
                         </button>
                         <button
-                            onClick={() => dispatch({ type: "REMOVE_TODO", payload: todo })}>
+                            onClick={async () => {
+                                axios.delete(`https://react-hooks-api-topaz.vercel.app/todos/${todo.id}`)
+                                dispatch({ type: "REMOVE_TODO", payload: todo })
+                            }}>
                             Delete
                         </button>
                     </li>
