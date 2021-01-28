@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios'
 
-export default function App() {
+export default function News() {
     const [results, setResults] = useState([]);
     const [query, setQuery] = useState("react hooks");
     const [loading, setLoading] = useState(false);
@@ -44,7 +44,7 @@ export default function App() {
     return (
       <>
         <form onSubmit={handleSearch}>
-            <input 
+            <input
                 type="text"
                 onChange={event => setQuery(event.target.value)}
                 value={query}
